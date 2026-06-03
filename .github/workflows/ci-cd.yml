@@ -21,37 +21,35 @@ jobs:
       - name: Install huggingface_hub
         run: pip install huggingface_hub
 
-      - name: Deploy everything via HF API
+      - name: Write HF README
+        run: |
+          cat > README.md << 'README'
+          ---
+          title: Dot Camp 5 Selection Engine
+          emoji: 🚀
+          colorFrom: green
+          colorTo: blue
+          sdk: streamlit
+          sdk_version: "1.32.0"
+          python_version: "3.11"
+          app_file: app.py
+          pinned: false
+          ---
+          # Dot Camp 5 – Startup Selection Engine
+          Automated startup screening tool for Dot Camp 5.
+          README
+
+      - name: Deploy via HF API
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          python - <<'PYEOF'
+          python3 - << 'PYEOF'
           import os
           from huggingface_hub import HfApi
 
           api = HfApi()
           token = os.environ["HF_TOKEN"]
           repo_id = "adamnouassida5/the_dot_camp5"
-
-          # Write the correct README with HF Space config header
-          readme_content = """---
-title: Dot Camp 5 Selection Engine
-emoji: 🚀
-colorFrom: green
-colorTo: blue
-sdk: streamlit
-sdk_version: "1.32.0"
-python_version: "3.11"
-app_file: app.py
-pinned: false
----
-
-# Dot Camp 5 – Startup Selection Engine
-
-Automated startup screening tool for Dot Camp 5.
-"""
-          with open("README.md", "w") as f:
-              f.write(readme_content)
 
           files_to_upload = [
               "app.py",
@@ -71,9 +69,9 @@ Automated startup screening tool for Dot Camp 5.
                       repo_type="space",
                       token=token,
                   )
-                  print(f"✅ Uploaded {f}")
+                  print("Uploaded: " + f)
               else:
-                  print(f"⚠️  Skipped (not found): {f}")
+                  print("Skipped: " + f)
 
-          print("🚀 Deployment complete")
+          print("Deployment complete")
           PYEOF
