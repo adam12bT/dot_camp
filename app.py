@@ -18,7 +18,7 @@ from openpyxl.utils import get_column_letter
 from engine import evaluate, MATURITY_OPTIONS, AGE_OPTIONS, EMPLOYEE_RANGES, CLIENT_RANGES
 
 # ─── Hardcoded Excel path ──────────────────────────────────────────────────────
-EXCEL_PATH = r"C:\Users\adamb\Desktop\feres\Selection des startups Dot Camp 5 (2).xlsx"  # ← change this to your full path
+EXCEL_PATH = "data/Selection_des_startups_Dot_Camp_5.xlsx"
 # Examples:
 #   Windows: "C:/Users/YourName/Documents/Selection_des_startups_Dot_Camp_5.xlsx"
 #   Mac/Linux: "/home/yourname/Documents/Selection_des_startups_Dot_Camp_5.xlsx"
