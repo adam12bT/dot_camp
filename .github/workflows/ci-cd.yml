@@ -21,7 +21,7 @@ jobs:
       - name: Install huggingface_hub
         run: pip install huggingface_hub
 
-      - name: Upload xlsx via HF API
+      - name: Deploy everything via HF API
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
@@ -31,36 +31,30 @@ jobs:
 
           api = HfApi()
           token = os.environ["HF_TOKEN"]
+          repo_id = "adamnouassida5/the_dot_camp5"
 
-          api.upload_file(
-              path_or_fileobj="data/Selection des startups Dot Camp 5 (2).xlsx",
-              path_in_repo="data/Selection des startups Dot Camp 5 (2).xlsx",
-              repo_id="adamnouassida5/the_dot_camp5",
-              repo_type="space",
-              token=token,
-          )
-          print("✅ Excel file uploaded to HF")
+          # Upload all files individually — no git push at all
+          files_to_upload = [
+              "app.py",
+              "engine.py",
+              "mock_data.py",
+              "requirements.txt",
+              "README.md",
+              "data/Selection des startups Dot Camp 5 (2).xlsx",
+          ]
+
+          for f in files_to_upload:
+              if os.path.exists(f):
+                  api.upload_file(
+                      path_or_fileobj=f,
+                      path_in_repo=f,
+                      repo_id=repo_id,
+                      repo_type="space",
+                      token=token,
+                  )
+                  print(f"✅ Uploaded {f}")
+              else:
+                  print(f"⚠️  Skipped (not found): {f}")
+
+          print("🚀 Deployment complete")
           PYEOF
-
-      - name: Push code to Hugging Face Space
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          git config --global user.email "ci-bot@github-actions"
-          git config --global user.name "GitHub Actions"
-
-          # Remove xlsx from git so HF doesn't reject the push
-          git rm --cached "data/Selection des startups Dot Camp 5 (2).xlsx" || true
-          git commit -m "remove xlsx from git tracking for HF push" || true
-
-          git remote add hf https://adamnouassida5:${HF_TOKEN}@huggingface.co/spaces/adamnouassida5/the_dot_camp5
-
-          for i in 1 2 3; do
-            echo "Attempt $i..."
-            git push hf main --force && echo "✅ Deploy successful" && exit 0
-            echo "Failed, waiting 30s before retry..."
-            sleep 30
-          done
-
-          echo "❌ All attempts failed"
-          exit 1
