@@ -18,15 +18,40 @@ jobs:
       - name: Pull LFS files from GitHub
         run: git lfs pull
 
-      - name: Push to Hugging Face Space (with retry)
+      - name: Install huggingface_hub
+        run: pip install huggingface_hub
+
+      - name: Upload xlsx via HF API
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python - <<'PYEOF'
+          import os
+          from huggingface_hub import HfApi
+
+          api = HfApi()
+          token = os.environ["HF_TOKEN"]
+
+          api.upload_file(
+              path_or_fileobj="data/Selection des startups Dot Camp 5 (2).xlsx",
+              path_in_repo="data/Selection des startups Dot Camp 5 (2).xlsx",
+              repo_id="adamnouassida5/the_dot_camp5",
+              repo_type="space",
+              token=token,
+          )
+          print("✅ Excel file uploaded to HF")
+          PYEOF
+
+      - name: Push code to Hugging Face Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           git config --global user.email "ci-bot@github-actions"
           git config --global user.name "GitHub Actions"
 
-          # Allow incomplete LFS push (HF has its own LFS, it will handle the file)
-          git config lfs.allowincompletepush true
+          # Remove xlsx from git so HF doesn't reject the push
+          git rm --cached "data/Selection des startups Dot Camp 5 (2).xlsx" || true
+          git commit -m "remove xlsx from git tracking for HF push" || true
 
           git remote add hf https://adamnouassida5:${HF_TOKEN}@huggingface.co/spaces/adamnouassida5/the_dot_camp5
 
